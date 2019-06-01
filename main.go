@@ -33,6 +33,15 @@ func main() {
 	if hostname == "" {
 		hostname = "anonymous"
 	}
+	message := os.Getenv("GOLLO_MESSAGE")
+	if message == "" {
+		message = "Good day sir."
+	}
+	bindAddr := os.Getenv("SERVER_IP")
+	port := os.Getenv("SERVER_PORT")
+	if port == "" {
+		port = "8080"
+	}
 
 	mux := http.NewServeMux()
 
@@ -45,10 +54,10 @@ func main() {
 
 		w.Header().Set("Content-Type", "text/plain; charset=utf-8")
 		w.WriteHeader(http.StatusOK)
-		w.Write([]byte(
-			fmt.Sprintf("(%s) [%v] Gollo, I'm %s and running a new version\n",
+		_, _ = w.Write([]byte(
+			fmt.Sprintf("(%s) [%v] I'm Gollo, running on \"%s\", I say to you \"%s\"\n",
 				version,
-				startTime.Format(time.RFC1123), hostname)))
+				startTime.Format(time.RFC1123), hostname, message)))
 	})
 
 	mux.HandleFunc("/actuator/health", func(w http.ResponseWriter, r *http.Request) {
@@ -57,11 +66,11 @@ func main() {
 		defer healthRequests.Inc()
 		w.Header().Set("Content-Type", "application/json; charset=utf-8")
 		w.WriteHeader(http.StatusOK)
-		w.Write([]byte("{ \"health\": \"100%\" }\n"))
+		_, _ = w.Write([]byte("{ \"health\": \"100%\" }\n"))
 	})
 
-	log.Printf("Starting Server (%s)", hostname)
-	err := http.ListenAndServe(":8080", mux)
+	log.Printf("Starting Server (%s) on port %s", hostname, port)
+	err := http.ListenAndServe(bindAddr+":"+port, mux)
 	if err != nil {
 		log.Fatalf("Unable to start server: %v", err)
 	}

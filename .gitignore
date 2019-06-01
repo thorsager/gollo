@@ -13,3 +13,6 @@
 
 # Vi backup files
 *~
+
+# Goland
+.idea
