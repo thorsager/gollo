@@ -7,6 +7,8 @@ import (
 	"log"
 	"net/http"
 	"os"
+	"strconv"
+	"strings"
 	"time"
 )
 
@@ -42,7 +44,11 @@ func main() {
 	if port == "" {
 		port = "8080"
 	}
-
+	dumpHeaders, err := strconv.ParseBool(os.Getenv("DUMP_HEADERS"))
+	if err != nil {
+		log.Printf("WARNING: %s", err)
+		dumpHeaders = false
+	}
 	mux := http.NewServeMux()
 
 	mux.Handle("/actuator/prometheus", promhttp.Handler())
@@ -58,6 +64,11 @@ func main() {
 			fmt.Sprintf("(%s) [%v] I'm Gollo, running on \"%s\", I say to you \"%s\"\n",
 				version,
 				startTime.Format(time.RFC1123), hostname, message)))
+
+		if dumpHeaders {
+			_, _ = w.Write([]byte(formatRequest(r)))
+		}
+
 	})
 
 	mux.HandleFunc("/actuator/health", func(w http.ResponseWriter, r *http.Request) {
@@ -70,8 +81,35 @@ func main() {
 	})
 
 	log.Printf("Starting Server (%s) on port %s", hostname, port)
-	err := http.ListenAndServe(bindAddr+":"+port, mux)
+	err = http.ListenAndServe(bindAddr+":"+port, mux)
 	if err != nil {
 		log.Fatalf("Unable to start server: %v", err)
 	}
+}
+
+// formatRequest generates ascii representation of a request
+func formatRequest(r *http.Request) string {
+	// Create return string
+	var request []string
+	// Add the request string
+	url := fmt.Sprintf("%v %v %v", r.Method, r.URL, r.Proto)
+	request = append(request, url)
+	// Add the host
+	request = append(request, fmt.Sprintf("Host: %v", r.Host))
+	// Loop through headers
+	for name, headers := range r.Header {
+		name = strings.ToLower(name)
+		for _, h := range headers {
+			request = append(request, fmt.Sprintf("%v: %v", name, h))
+		}
+	}
+
+	// If this is a POST, add post data
+	if r.Method == "POST" {
+		r.ParseForm()
+		request = append(request, "\n")
+		request = append(request, r.Form.Encode())
+	}
+	// Return the request as a string
+	return strings.Join(request, "\n")
 }
