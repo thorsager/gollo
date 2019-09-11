@@ -7,6 +7,7 @@ import (
 	"log"
 	"net/http"
 	"os"
+	"sort"
 	"strconv"
 	"strings"
 	"time"
@@ -49,6 +50,13 @@ func main() {
 		log.Printf("WARNING: %s", err)
 		dumpHeaders = false
 	}
+
+	dumpEnvironment, err := strconv.ParseBool(os.Getenv("DUMP_ENVIRONMENT"))
+	if err != nil {
+		log.Printf("WARNING: %s", err)
+		dumpHeaders = false
+	}
+
 	mux := http.NewServeMux()
 
 	mux.Handle("/actuator/prometheus", promhttp.Handler())
@@ -60,13 +68,15 @@ func main() {
 
 		w.Header().Set("Content-Type", "text/plain; charset=utf-8")
 		w.WriteHeader(http.StatusOK)
-		_, _ = w.Write([]byte(
-			fmt.Sprintf("(%s) [%v] I'm Gollo, running on \"%s\", I say to you \"%s\"\n",
-				version,
-				startTime.Format(time.RFC1123), hostname, message)))
+		_, _ = fmt.Fprintf(w, "(%s) [%v] I'm Gollo, running on \"%s\", I say to you \"%s\"\n",
+			version,
+			startTime.Format(time.RFC1123), hostname, message)
 
 		if dumpHeaders {
-			_, _ = w.Write([]byte(formatRequest(r)))
+			_, _ = fmt.Fprintf(w, "\n--- headers ---\n%s\n", formatRequest(r))
+		}
+		if dumpEnvironment {
+			_, _ = fmt.Fprintf(w, "\n--- environment ---\n%s\n", strings.Join(os.Environ(), "\n"))
 		}
 
 	})
@@ -96,10 +106,16 @@ func formatRequest(r *http.Request) string {
 	request = append(request, url)
 	// Add the host
 	request = append(request, fmt.Sprintf("Host: %v", r.Host))
+
+	var headerNames []string
+	for name, _ := range r.Header {
+		headerNames = append(headerNames, name)
+	}
+	sort.Strings(headerNames)
+
 	// Loop through headers
-	for name, headers := range r.Header {
-		name = strings.ToLower(name)
-		for _, h := range headers {
+	for _, name := range headerNames {
+		for _, h := range r.Header[name] {
 			request = append(request, fmt.Sprintf("%v: %v", name, h))
 		}
 	}
