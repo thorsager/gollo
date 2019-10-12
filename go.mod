@@ -10,3 +10,5 @@ require (
 	github.com/prometheus/procfs v0.0.0-20180920065004-418d78d0b9a7 // indirect
 	golang.org/x/sync v0.0.0-20190423024810-112230192c58 // indirect
 )
+
+go 1.13
