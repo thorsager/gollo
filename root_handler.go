@@ -41,7 +41,7 @@ func formatRequest(r *http.Request) string {
 	request = append(request, fmt.Sprintf("Host: %v", r.Host))
 
 	var headerNames []string
-	for name, _ := range r.Header {
+	for name := range r.Header {
 		headerNames = append(headerNames, name)
 	}
 	sort.Strings(headerNames)
@@ -55,7 +55,7 @@ func formatRequest(r *http.Request) string {
 
 	// If this is a POST, add post data
 	if r.Method == "POST" {
-		r.ParseForm()
+		_ = r.ParseForm()
 		request = append(request, "\n")
 		request = append(request, r.Form.Encode())
 	}
