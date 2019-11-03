@@ -2,8 +2,6 @@
 Simple Test web-app in go
 
 [![Go Report Card](https://goreportcard.com/badge/github.com/thorsager/gollo)](https://goreportcard.com/report/github.com/thorsager/gollo)
-[![](https://images.microbadger.com/badges/image/thorsager/gollo.svg)](https://microbadger.com/images/thorsager/gollo "Get your own image badge on microbadger.com")
-[![](https://images.microbadger.com/badges/version/thorsager/gollo.svg)](https://microbadger.com/images/thorsager/gollo "Get your own version badge on microbadger.com")
 
 
 ## A bit of config
