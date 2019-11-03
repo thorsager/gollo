@@ -1,8 +1,8 @@
 # gollo
 Simple Test web-app in go
 
-![GitHub language count](https://img.shields.io/github/languages/count/thorsager/gollo)
-![GitHub code size in bytes](https://img.shields.io/github/languages/code-size/thorsager/gollo)
+[![GitHub language count](https://img.shields.io/github/languages/count/thorsager/gollo)](https://github.com/thorsager/gollo)
+[![GitHub code size in bytes](https://img.shields.io/github/languages/code-size/thorsager/gollo)](https://github.com/thorsager/gollo)
 [![Go Report Card](https://goreportcard.com/badge/github.com/thorsager/gollo)](https://goreportcard.com/report/github.com/thorsager/gollo)
 [![Build Status](https://travis-ci.com/thorsager/gollo.svg?branch=master)](https://travis-ci.com/thorsager/gollo)
 [![Docker Pulls](https://img.shields.io/docker/pulls/thorsager/gollo)](https://hub.docker.com/r/thorsager/gollo)
