@@ -21,8 +21,6 @@ In the same way the `DUMP_ENVIRONMENT` ENV var will dump the current environment
 **!Please note that dumping the entire server runtime environment to everybody that asks may not be the most secure
 thing in the world**
 
-### Paths
-
 It is now possible to change the _path_ of the **prometheus** and the **health** endpoints by setting the two env vars
 `PROMETHEUS_PATH` and `HEALTH_PATH`, note: paths should be _absolute_ (starting with `/`)
 
