@@ -1,6 +1,7 @@
 package main
 
 import (
+	"crypto/subtle"
 	"github.com/prometheus/client_golang/prometheus"
 	"github.com/prometheus/client_golang/prometheus/promhttp"
 	"log"
@@ -23,8 +24,8 @@ var (
 		Help: "The total number of received requests",
 	})
 
-	hostname, message, bindAddr, port, prometheusPath, healthPath string
-	dumpEnvironment, dumpHeaders                                  bool
+	hostname, message, bindAddr, port, prometheusPath, healthPath, basicUser, basicPassword, basicPath string
+	dumpEnvironment, dumpHeaders                                                                       bool
 )
 
 func init() {
@@ -36,6 +37,9 @@ func init() {
 	message = getEnvOrDflt("GOLLO_MESSAGE", "Good day Sir.")
 	bindAddr = getEnvOrDflt("SERVER_IP", "")
 	port = getEnvOrDflt("SERVER_PORT", "8080")
+	basicPath = getEnvOrDflt("BASIC_PATH", "/basic")
+	basicUser = getEnvOrDflt("BASIC_USER", "gollo")
+	basicPassword = getEnvOrDflt("BASIC_PASSWORD", "gollo")
 	dumpHeaders, err = strconv.ParseBool(getEnvOrDflt("DUMP_HEADERS", "false"))
 	if err != nil {
 		log.Printf("WARNING: %s", err)
@@ -50,7 +54,8 @@ func init() {
 
 func main() {
 	mux := http.NewServeMux()
-	mux.Handle("/", logging(rootHandler()))
+	mux.Handle("/", logging(pathHandler("/")))
+	mux.Handle(basicPath, basicAuth(logging(pathHandler(basicPath)), credentialValidator(basicUser, basicPassword)))
 	mux.Handle(prometheusPath, logging(promhttp.Handler()))
 	mux.Handle(healthPath, logging(actuatorHandler()))
 	log.Printf("Starting Gollo Server v%s (%s) on port %s, header=%t, env=%t, metrics='%s', health='%s'",
@@ -69,6 +74,28 @@ func logging(next http.Handler) http.Handler {
 		next.ServeHTTP(&o, r)
 		log.Printf("(%s) \"%s\" [%d] (%d) served to in %v", r.RemoteAddr, r.URL.Path, o.statusCode, o.size, time.Since(startTime))
 	})
+}
+
+func basicAuth(next http.Handler, isValidCredentials func(string, string) bool) http.Handler {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		user, pass, ok := r.BasicAuth()
+		if !ok || !isValidCredentials(user, pass) {
+			w.Header().Set("WWW-Authenticate", `Basic realm="gollo"`)
+			w.WriteHeader(401)
+			_, _ = w.Write([]byte("Unauthorized"))
+			return
+		}
+		next.ServeHTTP(w, r)
+	})
+}
+
+func credentialValidator(user, pass string) func(string, string) bool {
+	validUser := []byte(user)
+	validPassword := []byte(pass)
+	return func(user, pass string) bool {
+		return subtle.ConstantTimeCompare(validUser, []byte(user)) == 1 && subtle.ConstantTimeCompare(validPassword, []byte(pass)) == 1
+	}
+
 }
 
 // getEnvOrDflt - Retrieves a name environment variable, if variable

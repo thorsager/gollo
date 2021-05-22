@@ -10,9 +10,9 @@ import (
 	"time"
 )
 
-func rootHandler() http.Handler {
+func pathHandler(path string) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		if r.URL.Path != "/" {
+		if r.URL.Path != path {
 			http.NotFound(w, r)
 			return
 		}

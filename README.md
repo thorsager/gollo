@@ -24,6 +24,9 @@ thing in the world**
 It is now possible to change the _path_ of the **prometheus** and the **health** endpoints by setting the two env vars
 `PROMETHEUS_PATH` and `HEALTH_PATH`, note: paths should be _absolute_ (starting with `/`)
 
+Basic out is now also available, by default the path `/path` is secured by `gollo:gollo` these values can be changed by
+setting `BASIC_PATH`, `BASIC_USER` and `BASIC_PASSWORD`.
+
 # Running the thing
 
 ```bash
@@ -32,5 +35,8 @@ docker run --rm \
   -e DUMP_HEADERS=true \
   -e HEALTH_PATH=/health \
   -e PROMETHEUS_PATH=/prometheus \
+  -e BASIC_PATH=/basic \
+  -e BASIC_USER=gollo \
+  -e BASIC_PASSWORD=gollo \
   thorsager/gollo
 ```
