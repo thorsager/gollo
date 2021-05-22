@@ -11,7 +11,7 @@ import (
 )
 
 var (
-	version string
+	version = "*unset*"
 
 	healthRequests = prometheus.NewCounter(prometheus.CounterOpts{
 		Name: "http_total_health_requests",
@@ -23,13 +23,15 @@ var (
 		Help: "The total number of received requests",
 	})
 
-	hostname, message, bindAddr, port string
-	dumpEnvironment, dumpHeaders      bool
+	hostname, message, bindAddr, port, prometheusPath, healthPath string
+	dumpEnvironment, dumpHeaders                                  bool
 )
 
 func init() {
 	var err error
 	prometheus.MustRegister(healthRequests, totalRequests)
+	prometheusPath = getEnvOrDflt("PROMETHEUS_PATH", "/actuator/prometheus")
+	healthPath = getEnvOrDflt("HEALTH_PATH", "/actuator/health")
 	hostname = getEnvOrDflt("HOSTNAME", "anonymous")
 	message = getEnvOrDflt("GOLLO_MESSAGE", "Good day Sir.")
 	bindAddr = getEnvOrDflt("SERVER_IP", "")
@@ -48,10 +50,11 @@ func init() {
 
 func main() {
 	mux := http.NewServeMux()
-	mux.Handle("/actuator/prometheus", logging(promhttp.Handler()))
 	mux.Handle("/", logging(rootHandler()))
-	mux.Handle("/actuator/health", logging(actuatorHandler()))
-	log.Printf("Starting Server (%s) on port %s", hostname, port)
+	mux.Handle(prometheusPath, logging(promhttp.Handler()))
+	mux.Handle(healthPath, logging(actuatorHandler()))
+	log.Printf("Starting Gollo Server v%s (%s) on port %s, header=%t, env=%t, metrics='%s', health='%s'",
+		version, hostname, port, dumpHeaders, dumpEnvironment, prometheusPath, healthPath)
 	err := http.ListenAndServe(bindAddr+":"+port, mux)
 	if err != nil {
 		log.Fatalf("Unable to start server: %v", err)
