@@ -61,7 +61,6 @@ func formatRequest(r *http.Request) string {
 		request = append(request, r.Form.Encode())
 	} else {
 		bodyBytes, _ := ioutil.ReadAll(r.Body)
-		request = append(request, "\n")
 		request = append(request, string(bodyBytes))
 	}
 	// Return the request as a string
