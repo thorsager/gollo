@@ -13,8 +13,26 @@ not set, Gollo will bin do all available addresses, and if `SERVER_PORT` is not 
 
 Also Gollo will print out the message found in the ENV var `GOLLO_MESSAGE` in every response.
 
-If the `DUMP_HEADERS` ENV var is set to a value that evaluates to `true` it will dump request headers
-in response as well.
+If the `DUMP_HEADERS` ENV var is set to a value that evaluates to `true` it will dump request headers in response as
+well.
 
-In the same way the `DUMP_ENVIRONMENT` ENV var will dump the current environment in which the "server" is
-running.
+In the same way the `DUMP_ENVIRONMENT` ENV var will dump the current environment in which the "server" is running.
+
+**!Please note that dumping the entire server runtime environment to everybody that asks may not be the most secure
+thing in the world**
+
+### Paths
+
+It is now possible to change the _path_ of the **prometheus** and the **health** endpoints by setting the two env vars
+`PROMETHEUS_PATH` and `HEALTH_PATH`, note: paths should be _absolute_ (starting with `/`)
+
+# Running the thing
+
+```bash
+docker run --rm \
+  -e DUMP_ENVIRONMENT=true \
+  -e DUMP_HEADERS=true \
+  -e HEALTH_PATH=/health \
+  -e PROMETHEUS_PATH=/prometheus \
+  thorsager/gollo
+```

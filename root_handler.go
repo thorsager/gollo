@@ -2,6 +2,7 @@ package main
 
 import (
 	"fmt"
+	"io/ioutil"
 	"net/http"
 	"os"
 	"sort"
@@ -54,10 +55,14 @@ func formatRequest(r *http.Request) string {
 	}
 
 	// If this is a POST, add post data
-	if r.Method == "POST" {
+	if r.Method == "POST" && r.Header.Get("Content-Type") == "application/x-www-form-urlencoded" {
 		_ = r.ParseForm()
 		request = append(request, "\n")
 		request = append(request, r.Form.Encode())
+	} else {
+		bodyBytes, _ := ioutil.ReadAll(r.Body)
+		request = append(request, "\n")
+		request = append(request, string(bodyBytes))
 	}
 	// Return the request as a string
 	return strings.Join(request, "\n")

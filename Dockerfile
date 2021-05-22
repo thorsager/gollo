@@ -1,4 +1,4 @@
-FROM golang:1.13-buster as build
+FROM golang:1.16-buster as build
 
 RUN apt-get update && apt-get install -y --no-install-recommends \
         git \
