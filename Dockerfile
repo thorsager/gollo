@@ -15,11 +15,12 @@ COPY go.mod go.sum /build/
 RUN go mod download
 
 ADD . /build
-RUN CGO_ENABLED=0 GOOS=linux GOARCH=amd64 \
+RUN CGO_ENABLED=0 GOOS=linux \
     go build -a -tags netgo -ldflags "-X main.version=$(git describe --tags --dirty --always) -w -extldflags -static" \
         -o /build/gollo .
 
 FROM gcr.io/distroless/static
+LABEL org.opencontainers.image.source=https://github.com/thorsager/gollo
 USER nonroot
 WORKDIR /
 
