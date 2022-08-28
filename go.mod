@@ -1,14 +1,17 @@
 module gollo
 
+require github.com/prometheus/client_golang v1.13.0
+
 require (
-	github.com/beorn7/perks v0.0.0-20180321164747-3a771d992973 // indirect
-	github.com/golang/protobuf v1.2.0 // indirect
+	github.com/beorn7/perks v1.0.1 // indirect
+	github.com/cespare/xxhash/v2 v2.1.2 // indirect
+	github.com/golang/protobuf v1.5.2 // indirect
 	github.com/matttproud/golang_protobuf_extensions v1.0.1 // indirect
-	github.com/prometheus/client_golang v0.8.0
-	github.com/prometheus/client_model v0.0.0-20180712105110-5c3871d89910 // indirect
-	github.com/prometheus/common v0.0.0-20180801064454-c7de2306084e // indirect
-	github.com/prometheus/procfs v0.0.0-20180920065004-418d78d0b9a7 // indirect
-	golang.org/x/sync v0.0.0-20190423024810-112230192c58 // indirect
+	github.com/prometheus/client_model v0.2.0 // indirect
+	github.com/prometheus/common v0.37.0 // indirect
+	github.com/prometheus/procfs v0.8.0 // indirect
+	golang.org/x/sys v0.0.0-20220825204002-c680a09ffe64 // indirect
+	google.golang.org/protobuf v1.28.1 // indirect
 )
 
-go 1.13
+go 1.19

@@ -1,26 +1,18 @@
-FROM golang:1.16-buster as build
-
-RUN apt-get update && apt-get install -y --no-install-recommends \
-        git \
-        && rm -rf /var/lib/apt/lists/*
-
-RUN groupadd --non-unique --gid 1001 buid-group \
-    && useradd --non-unique -m --uid 1001 --gid 1001 build-user
-RUN mkdir /build && chown build-user /build
-USER build-user
-
+FROM golang:1-alpine as build
+RUN apk add --update --no-cache make git
+RUN mkdir /build
 WORKDIR /build
-
 COPY go.mod go.sum /build/
+RUN go list -m all
 RUN go mod download
 
 ADD . /build
-RUN CGO_ENABLED=0 GOOS=linux GOARCH=amd64 \
+RUN CGO_ENABLED=0 GOOS=linux \
     go build -a -tags netgo -ldflags "-X main.version=$(git describe --tags --dirty --always) -w -extldflags -static" \
         -o /build/gollo .
 
-FROM gcr.io/distroless/static
-USER nonroot
+FROM alpine:3
+LABEL org.opencontainers.image.source=https://github.com/thorsager/gollo
 WORKDIR /
 
 COPY --from=build /build/gollo /
