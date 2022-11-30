@@ -2,7 +2,7 @@ package main
 
 import (
 	"fmt"
-	"io/ioutil"
+	"io"
 	"net/http"
 	"os"
 	"sort"
@@ -27,6 +27,19 @@ func pathHandler(path string) http.Handler {
 		}
 		if dumpEnvironment {
 			_, _ = fmt.Fprintf(w, "\n--- environment ---\n%s\n", strings.Join(os.Environ(), "\n"))
+		}
+		if dumpPublicIp {
+			_, _ = fmt.Fprint(w, "\n--- public ip ---\n")
+			if ipv4, err := detectIPv4(); err != nil {
+				_, _ = fmt.Fprintf(w, "%s\n", err)
+			} else {
+				_, _ = fmt.Fprintf(w, "Detected public IPv4: %s\n", ipv4)
+			}
+			if ipv6, err := detectIPv64(); err != nil {
+				_, _ = fmt.Fprintf(w, "%s\n", err)
+			} else {
+				_, _ = fmt.Fprintf(w, "Detected public IPv6: %s\n", ipv6)
+			}
 		}
 	})
 }
@@ -59,7 +72,7 @@ func formatRequest(r *http.Request) string {
 		_ = r.ParseForm()
 		request = append(request, r.Form.Encode())
 	} else {
-		bodyBytes, _ := ioutil.ReadAll(r.Body)
+		bodyBytes, _ := io.ReadAll(r.Body)
 		request = append(request, string(bodyBytes))
 	}
 	// Return the request as a string

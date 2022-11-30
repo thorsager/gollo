@@ -21,6 +21,9 @@ In the same way the `DUMP_ENVIRONMENT` ENV var will dump the current environment
 **!Please note that dumping the entire server runtime environment to everybody that asks may not be the most secure
 thing in the world**
 
+if `DUMP_PUBLIC_IP` is set to a `true` value, gollo will try to detect the public-facing IPv4 and IPv6 address of the
+server on which it is running. This is done by using the [ipify.org](https://www.ipify.org/) api.
+
 It is now possible to change the _path_ of the **prometheus** and the **health** endpoints by setting the two env vars
 `PROMETHEUS_PATH` and `HEALTH_PATH`, note: paths should be _absolute_ (starting with `/`)
 
@@ -33,6 +36,7 @@ setting `BASIC_PATH`, `BASIC_USER` and `BASIC_PASSWORD`.
 docker run --rm \
   -e DUMP_ENVIRONMENT=true \
   -e DUMP_HEADERS=true \
+  -e DUMP_PUBLIC_IP=true \
   -e HEALTH_PATH=/health \
   -e PROMETHEUS_PATH=/prometheus \
   -e BASIC_PATH=/basic \

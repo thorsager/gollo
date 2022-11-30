@@ -25,7 +25,7 @@ var (
 	})
 
 	hostname, message, bindAddr, port, prometheusPath, healthPath, basicUser, basicPassword, basicPath string
-	dumpEnvironment, dumpHeaders                                                                       bool
+	dumpEnvironment, dumpHeaders, dumpPublicIp                                                         bool
 )
 
 func init() {
@@ -49,6 +49,11 @@ func init() {
 	if err != nil {
 		log.Printf("WARNING: %s", err)
 		dumpHeaders = false
+	}
+	dumpPublicIp, err = strconv.ParseBool(getEnvOrDflt("DUMP_PUBLIC_IP", "false"))
+	if err != nil {
+		log.Printf("WARNING: %s", err)
+		dumpPublicIp = false
 	}
 }
 
