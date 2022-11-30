@@ -33,12 +33,12 @@ func pathHandler(path string) http.Handler {
 			if ipv4, err := detectIPv4(); err != nil {
 				_, _ = fmt.Fprintf(w, "%s\n", err)
 			} else {
-				_, _ = fmt.Fprintf(w, "Detected public IPv4: %s\n", ipv4)
+				_, _ = fmt.Fprintf(w, "public-facing IPv4: %s\n", ipv4)
 			}
 			if ipv6, err := detectIPv64(); err != nil {
 				_, _ = fmt.Fprintf(w, "%s\n", err)
 			} else {
-				_, _ = fmt.Fprintf(w, "Detected public IPv6: %s\n", ipv6)
+				_, _ = fmt.Fprintf(w, "public-facing IPv6: %s\n", ipv6)
 			}
 		}
 	})
