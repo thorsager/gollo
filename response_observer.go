@@ -9,6 +9,10 @@ type responseWriterObserver struct {
 	size        int64
 }
 
+func newResponseWriterObserver(w http.ResponseWriter) responseWriterObserver {
+	return responseWriterObserver{ResponseWriter: w, statusCode: http.StatusOK}
+}
+
 func (s *responseWriterObserver) Write(data []byte) (int, error) {
 	if !s.wroteHeader {
 		s.WriteHeader(http.StatusOK)

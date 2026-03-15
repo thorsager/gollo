@@ -5,15 +5,19 @@ import (
 	"io"
 	"net"
 	"net/http"
+	"time"
 )
+
+var ipClient = &http.Client{Timeout: 5 * time.Second}
 
 // detectIPv64 will try to resolve public facing IPv6 address, and return
 // error if not possible
 func detectIPv64() (net.IP, error) {
-	resp, err := http.DefaultClient.Get("https://api64.ipify.org")
+	resp, err := ipClient.Get("https://api64.ipify.org")
 	if err != nil {
 		return nil, err
 	}
+	defer resp.Body.Close()
 	body, err := io.ReadAll(resp.Body)
 	if err != nil {
 		return nil, err
@@ -34,16 +38,14 @@ func detectIPv64() (net.IP, error) {
 // detectIPv4 will try to resolve public facing IPv4 address, and return
 // error if not possible
 func detectIPv4() (net.IP, error) {
-	resp, err := http.DefaultClient.Get("https://api.ipify.org")
+	resp, err := ipClient.Get("https://api.ipify.org")
 	if err != nil {
 		return nil, err
 	}
+	defer resp.Body.Close()
 	body, err := io.ReadAll(resp.Body)
 	if err != nil {
 		return nil, err
-	}
-	if resp.StatusCode != 200 {
-		return nil, fmt.Errorf("unexpected response (%s): %s", resp.Status, body)
 	}
 	if resp.StatusCode != 200 {
 		return nil, fmt.Errorf("unexpected response (%s): %s", resp.Status, body)
