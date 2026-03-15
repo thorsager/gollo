@@ -48,7 +48,7 @@ func init() {
 	dumpEnvironment, err = strconv.ParseBool(getEnvOrDflt("DUMP_ENVIRONMENT", "false"))
 	if err != nil {
 		log.Printf("WARNING: %s", err)
-		dumpHeaders = false
+		dumpEnvironment = false
 	}
 	dumpPublicIp, err = strconv.ParseBool(getEnvOrDflt("DUMP_PUBLIC_IP", "false"))
 	if err != nil {
@@ -75,7 +75,7 @@ func logging(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		defer totalRequests.Inc()
 		startTime := time.Now()
-		o := responseWriterObserver{ResponseWriter: w}
+		o := newResponseWriterObserver(w)
 		next.ServeHTTP(&o, r)
 		log.Printf("(%s) \"%s\" [%d] (%d) served to in %v", r.RemoteAddr, r.URL.Path, o.statusCode, o.size, time.Since(startTime))
 	})
@@ -86,7 +86,7 @@ func basicAuth(next http.Handler, isValidCredentials func(string, string) bool) 
 		user, pass, ok := r.BasicAuth()
 		if !ok || !isValidCredentials(user, pass) {
 			w.Header().Set("WWW-Authenticate", `Basic realm="gollo"`)
-			w.WriteHeader(401)
+			w.WriteHeader(http.StatusUnauthorized)
 			_, _ = w.Write([]byte("Unauthorized"))
 			return
 		}
