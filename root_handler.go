@@ -44,14 +44,9 @@ func pathHandler(path string) http.Handler {
 	})
 }
 
-// formatRequest generates ascii representation of a request
 func formatRequest(r *http.Request) string {
-	// Create return string
 	var request []string
-	// Add the request string
-	url := fmt.Sprintf("%v %v %v", r.Method, r.URL, r.Proto)
-	request = append(request, url)
-	// Add the host
+	request = append(request, fmt.Sprintf("%v %v %v", r.Method, r.URL, r.Proto))
 	request = append(request, fmt.Sprintf("Host: %v", r.Host))
 
 	var headerNames []string
@@ -59,15 +54,12 @@ func formatRequest(r *http.Request) string {
 		headerNames = append(headerNames, name)
 	}
 	sort.Strings(headerNames)
-
-	// Loop through headers
 	for _, name := range headerNames {
 		for _, h := range r.Header[name] {
 			request = append(request, fmt.Sprintf("%v: %v", name, h))
 		}
 	}
 
-	// If this is a POST, add post data
 	if r.Method == "POST" && r.Header.Get("Content-Type") == "application/x-www-form-urlencoded" {
 		_ = r.ParseForm()
 		request = append(request, r.Form.Encode())
@@ -75,6 +67,5 @@ func formatRequest(r *http.Request) string {
 		bodyBytes, _ := io.ReadAll(r.Body)
 		request = append(request, string(bodyBytes))
 	}
-	// Return the request as a string
 	return strings.Join(request, "\n")
 }

@@ -2,13 +2,14 @@ package main
 
 import (
 	"crypto/subtle"
-	"github.com/prometheus/client_golang/prometheus"
-	"github.com/prometheus/client_golang/prometheus/promhttp"
 	"log"
 	"net/http"
 	"os"
 	"strconv"
 	"time"
+
+	"github.com/prometheus/client_golang/prometheus"
+	"github.com/prometheus/client_golang/prometheus/promhttp"
 )
 
 var (
@@ -48,7 +49,7 @@ func init() {
 	dumpEnvironment, err = strconv.ParseBool(getEnvOrDflt("DUMP_ENVIRONMENT", "false"))
 	if err != nil {
 		log.Printf("WARNING: %s", err)
-		dumpHeaders = false
+		dumpEnvironment = false
 	}
 	dumpPublicIp, err = strconv.ParseBool(getEnvOrDflt("DUMP_PUBLIC_IP", "false"))
 	if err != nil {
@@ -60,7 +61,7 @@ func init() {
 func main() {
 	mux := http.NewServeMux()
 	mux.Handle("/", logging(pathHandler("/")))
-	mux.Handle(basicPath, basicAuth(logging(pathHandler(basicPath)), credentialValidator(basicUser, basicPassword)))
+	mux.Handle(basicPath, basicAuth(logging(pathHandler(basicPath)), basicUser, basicPassword))
 	mux.Handle(prometheusPath, logging(promhttp.Handler()))
 	mux.Handle(healthPath, logging(actuatorHandler()))
 	log.Printf("Starting Gollo Server v%s (%s) on port %s, header=%t, env=%t, metrics='%s', health='%s'",
@@ -81,26 +82,16 @@ func logging(next http.Handler) http.Handler {
 	})
 }
 
-func basicAuth(next http.Handler, isValidCredentials func(string, string) bool) http.Handler {
+func basicAuth(next http.Handler, user, pass string) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		user, pass, ok := r.BasicAuth()
-		if !ok || !isValidCredentials(user, pass) {
+		u, p, ok := r.BasicAuth()
+		if !ok || subtle.ConstantTimeCompare([]byte(u), []byte(user)) != 1 || subtle.ConstantTimeCompare([]byte(p), []byte(pass)) != 1 {
 			w.Header().Set("WWW-Authenticate", `Basic realm="gollo"`)
-			w.WriteHeader(401)
-			_, _ = w.Write([]byte("Unauthorized"))
+			http.Error(w, "Unauthorized", http.StatusUnauthorized)
 			return
 		}
 		next.ServeHTTP(w, r)
 	})
-}
-
-func credentialValidator(user, pass string) func(string, string) bool {
-	validUser := []byte(user)
-	validPassword := []byte(pass)
-	return func(user, pass string) bool {
-		return subtle.ConstantTimeCompare(validUser, []byte(user)) == 1 && subtle.ConstantTimeCompare(validPassword, []byte(pass)) == 1
-	}
-
 }
 
 // getEnvOrDflt - Retrieves a name environment variable, if variable

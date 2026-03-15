@@ -4,21 +4,20 @@ import "net/http"
 
 type responseWriterObserver struct {
 	http.ResponseWriter
-	statusCode  int
-	wroteHeader bool
-	size        int64
+	statusCode int
+	size       int64
 }
 
 func (s *responseWriterObserver) Write(data []byte) (int, error) {
-	if !s.wroteHeader {
+	if s.statusCode == 0 {
 		s.WriteHeader(http.StatusOK)
 	}
 	n, err := s.ResponseWriter.Write(data)
 	s.size += int64(n)
 	return n, err
 }
+
 func (s *responseWriterObserver) WriteHeader(statusCode int) {
-	s.wroteHeader = true
 	s.statusCode = statusCode
 	s.ResponseWriter.WriteHeader(statusCode)
 }
